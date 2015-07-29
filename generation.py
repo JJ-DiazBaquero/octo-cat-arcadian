@@ -2,6 +2,7 @@ __author__ = 'JuanJose'
 
 import datetime
 import threading
+import copy
 
 full = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
         'S', 'T', 'U', 'V', 'X', 'Y', 'Z',
@@ -17,6 +18,7 @@ nm = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']
 dist = []
 iterations = [0]
 finish = [0]
+threads = []
 lock = threading.Lock()
 
 for i in range(0, 8):
@@ -31,25 +33,44 @@ dist[5] = mn
 dist[6] = nm
 dist[7] = nm
 
+cases = 1
+
+for k in dist:
+    cases *= len(k)
+
+print 'the number of cases are: ', cases
+
 def rec(index, word):
     if len(word) == 8:
         found(word)
     if finish[0] == 0:
-        if index < len(dist):
+        #create threads in this case
+        if len(word) == 0 or len(word) == 1:
+            print index
             for i in dist[index]:
-                n_word = ''.join([word, i])
+                n = ''.join([word, i])
+                n_word = copy.deepcopy(n)
                 t = threading.Thread(target=rec, args=(index+1, n_word))
-                t.run()
+                threads.append(t)
+                print 'Nuevo thread: ', threading.active_count()
+                print 'Thread alive 1: ', threads[0].is_alive()
+                t.start()
         else:
-            return word
+            #Add other letter
+            if index < len(dist):
+                for j in dist[index]:
+                    n = ''.join([word, j])
+                    n_word = copy.deepcopy(n)
+                    rec(index+1, n_word)
 
 def found(word):
-    #lock.acquire()
+    lock.acquire()
     iterations[0] += 1
     if iterations[0] % 1000000 == 0:
         print iterations[0] / 1000000, 'M'
         print word
-    #lock.release()
+        print 'threads: ', len(threads)
+    lock.release()
     if word == 'Blabla78':
         finish[0] = 1
         print 'found it'
