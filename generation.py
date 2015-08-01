@@ -60,6 +60,7 @@ def rec(index, word):
                     n_word = copy.deepcopy(n)
                     rec(index+1, n_word)
 
+
 def found(word):
     #lock.acquire()
     iterations[0] += 1
