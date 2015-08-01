@@ -20,7 +20,7 @@ iterations = [0]
 finish = [0]
 threads = []
 lock = threading.Lock()
-
+time = [0]
 for i in range(0, 8):
     dist.append([])
 
@@ -46,14 +46,11 @@ def rec(index, word):
     if finish[0] == 0:
         #create threads in this case
         if len(word) == 0 or len(word) == 1:
-            print index
             for i in dist[index]:
                 n = ''.join([word, i])
                 n_word = copy.deepcopy(n)
                 t = threading.Thread(target=rec, args=(index+1, n_word))
                 threads.append(t)
-                print 'Nuevo thread: ', threading.active_count()
-                print 'Thread alive 1: ', threads[0].is_alive()
                 t.start()
         else:
             #Add other letter
@@ -64,21 +61,21 @@ def rec(index, word):
                     rec(index+1, n_word)
 
 def found(word):
-    lock.acquire()
+    #lock.acquire()
     iterations[0] += 1
     if iterations[0] % 1000000 == 0:
         print iterations[0] / 1000000, 'M'
         print word
         print 'threads: ', len(threads)
-    lock.release()
+    #lock.release()
     if word == 'Blabla78':
         finish[0] = 1
         print 'found it'
-        print 'iteration: ' + iterations
-
-    return 0
+        print 'iteration: ' + iterations[0]
+        time2 = time - datetime.datetime.now()
+        print 'Completion time: ', time2
 
 time = datetime.datetime.now()
 rec(0, '')
-time = time - datetime.datetime.now()
-print time
+time1 = time[0] - datetime.datetime.now()
+print 'First Thread time: ', time1
