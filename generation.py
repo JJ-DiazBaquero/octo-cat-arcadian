@@ -71,11 +71,11 @@ def found(word):
     if word == 'Blabla78':
         finish[0] = 1
         print 'found it'
-        print 'iteration: ' + iterations[0]
-        time2 = time - datetime.datetime.now()
+        print 'iteration: ', iterations[0]
+        time2 = datetime.datetime.now() - time[0]
         print 'Completion time: ', time2
 
-time = datetime.datetime.now()
+time[0] = datetime.datetime.now()
 rec(0, '')
-time1 = time[0] - datetime.datetime.now()
+time1 = datetime.datetime.now() - time[0]
 print 'First Thread time: ', time1
