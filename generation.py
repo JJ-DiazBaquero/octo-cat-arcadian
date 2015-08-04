@@ -23,6 +23,7 @@ class OctoCat:
         self.iterations = [0]
         self.finish = [0]
         self.threads = []
+        self.words = {}
         self.lock = threading.Lock()
         self.time = [0]
         self.section = ''
@@ -35,7 +36,7 @@ class OctoCat:
         self.dist[3] = mn
         self.dist[4] = mn
         self.dist[5] = mn
-        self.dist[6] = nm
+        self.dist[6] = mn
         self.dist[7] = nm
         self.time[0] = datetime.datetime.now()
 
@@ -46,27 +47,31 @@ class OctoCat:
 
         print 'the number of cases are: ', cases
 
-    def rec(self, index, word, thread):
+    def gen(self):
+        current_time = datetime.datetime.now()
+        print 'Generating: '
+        for i in self.dist[0]:
+            for j in self.dist[1]:
+                n = ''.join([i, j])
+                n_word = copy.deepcopy(n)
+                t = Worker()
+                t = Worker(target=self.rec, name=n_word, index=2, word=n_word, thread=t)
+                self.words[n_word] = n_word
+                self.threads.append(t)
+                t.start()
+        print 'Done --  it took: ', datetime.datetime.now() - current_time
+
+    def rec(self, index, word, name):
         if len(word) == 8:
             self.found(word)
         if self.finish[0] == 0:
-            # create threads in this case
-            if len(word) == 0 or len(word) == 1:
-                for i in self.dist[index]:
-                    n = ''.join([word, i])
+            # Add other letter
+            if index < len(self.dist):
+                for j in self.dist[index]:
+                    n = ''.join([word, j])
                     n_word = copy.deepcopy(n)
-                    t = Worker()
-                    t = Worker(target=self.rec, name=n_word, index=index+1, word=n_word, thread=t)
-                    self.threads.append(t)
-                    t.start()
-            else:
-                # Add other letter
-                if index < len(self.dist):
-                    for j in self.dist[index]:
-                        n = ''.join([word, j])
-                        n_word = copy.deepcopy(n)
-                        thread.new_word(n_word)
-                        self.rec(index+1, n_word, thread)
+                    self.words[name] = n_word
+                    self.rec(index+1, n_word, name)
 
     def found(self, word):
         # lock.acquire()
@@ -74,7 +79,7 @@ class OctoCat:
         # if self.iterations[0] % 1000000 == 0:
         #    print self.iterations[0] / 1000000, 'M'
         # lock.release()
-        if word == 'Blabla78':
+        if word == 'Megaman5':
             self.finish[0] = 1
             print 'found it'
             print 'iteration: ', self.iterations[0]
@@ -83,7 +88,7 @@ class OctoCat:
 
 class Worker(threading.Thread):
     def __init__(self, target=None, index=None, word=None, name=None, thread=None):
-        threading.Thread.__init__(self, target=target, args=(index, word, thread), name=name)
+        threading.Thread.__init__(self, target=target, args=(index, word, name), name=name)
         self.name = name
         self.word = word
 
@@ -91,17 +96,17 @@ class Worker(threading.Thread):
         self.word = word
 
 obj = OctoCat()
-obj.rec(0, '', None)
+obj.gen()
 time1 = datetime.datetime.now() - obj.time[0]
 print 'First Thread time: ', time1
 
 def printing():
     config = configparser.RawConfigParser()
     config.add_section('data')
-    for t in obj.threads:
+    for t in obj.words.keys():
         # print t.word[0]+t.word[1], ' = ', t.word
-        print t.word[0:2], ' = ', t.word
-        config.set('data', t.word[0:2], t.word)
+        # print t.word[0:2], ' = ', t.word
+        config.set('data', t, obj.words[t])
     config_file = open('octoConfig.ini', 'wb')
     config.write(config_file)
     config_file.close()
